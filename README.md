@@ -5,3 +5,6 @@ Repository for Research Practice 2024
 
 
 10/03/2024 - added implementation for DeepLabV1
+
+
+17/03/2024 - added implementation for Fast RCNN
