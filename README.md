@@ -13,3 +13,5 @@ Repository for Research Practice 2024
 
 31/03/2024 - added sections for comparing results concerning accuracy
 
+07/04/2024 - added performance metrics for RCNN and improvements for DeepLabV1
+
