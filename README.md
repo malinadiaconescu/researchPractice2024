@@ -16,3 +16,5 @@ Repository for Research Practice 2024
 07/04/2024 - added performance metrics for RCNN and improvements for DeepLabV1
 
 14/04/2024 - tested UNET
+
+21/04/2024 - refactor UNET + tested FCN
