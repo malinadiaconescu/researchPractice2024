@@ -53,22 +53,23 @@ images_train, images_test, masks_train, masks_test = train_test_split(
 import tensorflow as tf
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate
+from tensorflow.keras.models import Model
+
 
 def FastRCNN_Segmentation(input_shape, num_classes):
-    # Define the input layer
     inputs = Input(shape=input_shape)
 
-    # VGG16 base model
+    # Base model: VGG16
     base_model = tf.keras.applications.VGG16(weights='imagenet', include_top=False, input_tensor=inputs)
 
-    # Encoder (downsampling)
+    # Encoder (downsampling path)
     conv1 = base_model.get_layer('block1_conv2').output
     conv2 = base_model.get_layer('block2_conv2').output
     conv3 = base_model.get_layer('block3_conv3').output
     conv4 = base_model.get_layer('block4_conv3').output
     conv5 = base_model.get_layer('block5_conv3').output
 
-    # Decoder (upsampling)
+    # Decoder (upsampling path)
     up_conv5 = UpSampling2D((2, 2))(conv5)
     up_conv5 = Conv2D(512, (3, 3), activation='relu', padding='same')(up_conv5)
     up_conv4 = concatenate([up_conv5, conv4], axis=-1)
@@ -82,16 +83,43 @@ def FastRCNN_Segmentation(input_shape, num_classes):
     up_conv2 = UpSampling2D((2, 2))(up_conv2)
     up_conv1 = concatenate([up_conv2, conv1], axis=-1)
     up_conv1 = Conv2D(64, (3, 3), activation='relu', padding='same')(up_conv1)
-    up_conv1 = UpSampling2D((2, 2))(up_conv1)
 
     # Output segmentation mask
     segmentation_output = Conv2D(num_classes, (1, 1), activation='softmax', name='segmentation')(up_conv1)
 
     # Define the model
-    model = tf.keras.Model(inputs=inputs, outputs=segmentation_output, name="EasyFastRCNN")
+    model = Model(inputs=inputs, outputs=segmentation_output, name="FastRCNNSegmentation")
 
     return model
 
+
+# Define input shape and number of classes
+input_shape = (144, 144, 3)  # Example input shape
+num_classes = 10  # Example number of classes
+
+# Initialize the model
+model = FastRCNN_Segmentation(input_shape, num_classes)
+
+# Compile the model
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['sparse_categorical_accuracy'])
+
+# Print model summary
+model.summary()
+
+# Dummy data for testing the model
+dummy_images = np.random.random((1, 144, 144, 3)).astype(np.float32)
+dummy_labels = np.random.randint(0, num_classes, (1, 144, 144)).astype(np.int32)
+
+# Check the output shapes
+# print(f"Dummy images shape: {dummy_images.shape}")
+# print(f"Dummy labels shape: {dummy_labels.shape}")
+#
+# # Predict to verify shape
+# predictions = model.predict(dummy_images)
+# print(f"Prediction shape: {predictions.shape}")
+
+# Perform a single training step to check for errors
+model.train_on_batch(dummy_images, dummy_labels)
 # Example usage
 input_image_size = (144, 144)
 num_classes = 2  # For binary segmentation, change it according to your task
